@@ -38,7 +38,7 @@ function App() {
     <div className={start ? "game" : ""}>
       {!start && <button onClick={() => setStart(true)}> Start Game </button>}
       <div>
-        <button onClick={()=>{socket.emit('CREATEROOM', "salah"); socket.emit('GamesList');}}> CREATEGame </button>
+        <button onClick={()=>{socket.emit('CREATEROOM', "salah");}}> CREATEGame </button>
         {start &&  <Game roomName="salah"/>}
         {gameslist.length > 0 &&  <GamesList  list={gameslist}/>}
       </div>

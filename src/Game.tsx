@@ -32,10 +32,7 @@ interface props{
 function Game({roomName } : props) {
 
 const socket = useContext(UserContext);
-socket.on('index', (i)=>{
-    console.log("index : ", i);
-  })
-console.log("SOCKET ID : ", socket.id);
+
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -179,18 +176,18 @@ function onMouseMove(event : MouseEvent) {
 
             player1.raquete.position.z -= moveZ;
             player1.raquete.position.x -=  stepX;
-            socket.emit('PlayerMoves', [player1.raquete.position, player1.raquete.rotation, 'room1', index]);
+            socket.emit('PlayerMoves', [player1.raquete.position, player1.raquete.rotation, 'salah', index]);
             if (index == 1)
             {
-                socket.emit('moveX', ['room1' ,stepX]);
-                socket.emit('moveZ', ['room1' ,moveZ]);
+                socket.emit('moveX', ['salah' ,stepX]);
+                socket.emit('moveZ', ['salah' ,moveZ]);
 
             }
         }
 
 }
 
-let stepZ = -0.5;
+let stepZ = -0.1;
 
 
 function reset(){
@@ -256,8 +253,10 @@ function touchRaquete(raqueteX : number, raqueteRotZ : number){
     return(false);
 }
 
+
 function animate() {
-console.log("INDEX : ", index);
+if (index ==undefined)
+    socket.emit('index', "salah");
 if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
     {
         maxZ = tableHeight / 2;
@@ -267,7 +266,7 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         if (!flag2 && Math.abs(player2.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player2.raquete.position.x, player2.raquete.rotation.z))
         {
             factor = 5;
-            stepZ = 0.5;
+            stepZ = 0.1;
             move = true;
             up = false; 
             flag2 = true;
@@ -278,7 +277,7 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         if (!flag1 && Math.abs(player1.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player1.raquete.position.x, player1.raquete.rotation.z))
         {
             factor = 5;
-            stepZ = -0.5;
+            stepZ = -0.1;
             up = false;
             move = true;
             flag1 = true;
@@ -303,12 +302,6 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
             reset();
         }
         if (move){
-            shodow.position.x = ball.object.position.x;
-            shodow.position.z = ball.object.position.z;
-            if (shodow.position.z > maxZ || shodow.position.z < minZ || shodow.position.x < minX || shodow.position.x > maxX)
-                shodow.material.opacity = 0;
-            else
-                shodow.material.opacity = 0.5;
             ball.object.position.x += ball.dirX;
             ball.object.position.z += stepZ;
 
@@ -332,13 +325,20 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         timerCheck();
         }
         if (!isIn){
-            socket.emit("JoinRoom", 'room1');
+            socket.emit("JoinRoom", 'salah');
             isIn = true;
         }
         else if (ball.object && index == 0)
-            socket.emit('data', [{x : ball.object.position.x, y : ball.object.position.y, z : ball.object.position.z}, "room1"]);
-    setTimeout(function() {
-        requestAnimationFrame(animate);
+            socket.emit('data', [{x : ball.object.position.x, y : ball.object.position.y, z : ball.object.position.z}, "salah"]);
+    
+        shodow.position.x = ball.object.position.x;
+        shodow.position.z = ball.object.position.z;
+        if (shodow.position.z > maxZ || shodow.position.z < minZ || shodow.position.x < minX || shodow.position.x > maxX)
+            shodow.material.opacity = 0;
+        else
+            shodow.material.opacity = 0.5;
+        setTimeout(function() {
+            requestAnimationFrame(animate);
     }, 1000 / 60); 
     renderer.render( scene, camera );
 }
@@ -410,8 +410,9 @@ socket.on('PlayerMoves', (pos : any, rot : any) => {
 })
 
 
-socket.on('index', (index) =>{
-    console.log("Game index : ", index);
+socket.on('index', (i) =>{
+    index = i;
+    console.log("Game index : ", i);
 })
 
 animate();
