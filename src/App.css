@@ -1,0 +1,46 @@
+/* body{
+  background-image: url(room4.jpg);
+  background-size: cover;
+  background-position: center;
+  background-position: 0cqi;
+
+}
+
+
+.scoreBoard{
+  width: 50%;
+  height: 10vh;
+  border: 5px solid black;    
+  display: flex;
+  justify-content: space-around;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 15px;
+  display: none;
+
+
+}
+
+
+span{
+  display: block;
+  justify-content: center;
+}
+
+.player1, .player2{
+  width: 50%;
+  text-align: center;
+  border: 2px solid black;
+
+}
+
+#player1Score, #player2Score {
+  font-size: 280%;
+  color: wheat;
+}
+
+#player1Name, #player2Name
+{
+  font-size: 200%;
+  width: 100%;
+}  */
