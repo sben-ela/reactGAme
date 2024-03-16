@@ -69,7 +69,7 @@ loader.load( 'table.glb', function ( gltf : GLTF) {
     scene.add(object1);
     object1.traverse(function (child) {
         if (child instanceof THREE.Mesh) {
-            child.material.color.set(0x621303); 
+            child.material.color.set(0xA07E77); 
         }
     });
 
@@ -259,6 +259,7 @@ if (index ==undefined)
     socket.emit('index', "salah");
 if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
     {
+
         maxZ = tableHeight / 2;
         minZ = tableHeight / -2;
         maxX = tableWidth / 2.2;
@@ -320,7 +321,10 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
             else if (up)
                 ball.object.position.y -= calculateStepY();
             if (ball.object.position.y < -0.8)
+            {
+                // ShodowMaterial.color = new THREE.Color(0x000000);
                 up = true;
+            }
         }
         timerCheck();
         }
@@ -335,8 +339,8 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         shodow.position.z = ball.object.position.z;
         if (shodow.position.z > maxZ || shodow.position.z < minZ || shodow.position.x < minX || shodow.position.x > maxX)
             shodow.material.opacity = 0;
-        else
-            shodow.material.opacity = 0.5;
+        // else
+            // shodow.material.opacity = -0.8 - ball.object.position.y;
         setTimeout(function() {
             requestAnimationFrame(animate);
     }, 1000 / 60); 
