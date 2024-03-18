@@ -6,11 +6,10 @@ import { RouterModule } from '@nestjs/core';
 import { Settings } from 'http2';
 import { subscribe } from 'diagnostics_channel';
 import { copyFileSync } from 'fs';
-import { Game } from '../game/Game'
 import { Ball } from 'src/ball/ball';
 import { RouteInfoPathExtractor } from '@nestjs/core/middleware/route-info-path-extractor';
 
-let gamesList= [];
+const gamesList= [];
 
 function removeGameList(value  : string)  {
   const index = gamesList.indexOf(value);
@@ -20,7 +19,7 @@ function removeGameList(value  : string)  {
 };
 
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true  , namespace: 'game' })
 export class EventsGateway {
   @WebSocketServer() server: Server;
   rooms = new Map();
@@ -67,52 +66,11 @@ export class EventsGateway {
         else if (this.rooms.get(roomName).client2.id == client.id)
           client.emit('index', 1);
       }
-    // if (this.rooms.has(roomName))
-    // {
-    //   let room = this.rooms.get(roomName);
-    //   if (room.player2Id != undefined){
-    //     console.log("room has no palce !");
-    //     return ;
-    //   }
-    //   if (room.player1Id != client.id)
-    //   {
-    //     room.player2Id = client.id;
-    //     room.client2 = client;
-    //   }
-    //   else{
-    //     console.log("client already in  :", roomName);
-    //   }
-    //   client.join(roomName);
-
-    //   client.emit('index', 1);
-    //   this.rooms.set(roomName, room);
-    //   console.log("THe client Joined Successful To ", roomName);
-    // }
-    // else{
-    //   let room = new Room();
-    //   room.name = roomName;
-    //   room.client1 = client;
-    //   room.player1Id = client.id;
-    //   client.emit('index', 0);
-    //   client.join(roomName);
-    //   this.rooms.set(roomName, room);
-    //   gamesList.push(roomName);
-    //   console.log(gamesList);
-    //   // client.emit('GamesList', ["salah", "mohamed", "Tom"]/);
-    //   console.log(roomName , " Created Successful !!");
-    // }
-
-  // }
   @SubscribeMessage('data')
   handleData(@MessageBody() data : [Ball, string]) {
       this.server.to(data[1]).emit('data', data);
   }
 
-  // @SubscribeMessage('GamesList')
-  // listGames(client : Socket){
-  //   client.emit('GamesList', gamesList);
-
-  // }
 
   @SubscribeMessage('PlayerMoves')
   playerMoves(@MessageBody() data : [any, any, string, number]){

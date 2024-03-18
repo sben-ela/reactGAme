@@ -69,7 +69,7 @@ loader.load( 'table.glb', function ( gltf : GLTF) {
     scene.add(object1);
     object1.traverse(function (child) {
         if (child instanceof THREE.Mesh) {
-            child.material.color.set(0xA07E77); 
+            child.material.color.set(0x6A0404); 
         }
     });
 
@@ -161,7 +161,7 @@ let initClientY = window.innerHeight / 2;
 let stepX = 0;
 
 function onMouseMove(event : MouseEvent) {
-        if (player1.raquete && !controls.enabled)
+        if (player1.raquete)// && !controls.enabled
         {
             moveZ = (event.clientY - initClientY) / window.innerHeight * 3;
             stepX = (event.clientX - initclientX) / window.innerWidth * (boundingBox.max.x - boundingBox.min.x); 
@@ -246,12 +246,14 @@ function calculateStepY(){
 function touchRaquete(raqueteX : number, raqueteRotZ : number){
     if (Math.abs(Math.abs(ball.object.position.x) - Math.abs(raqueteX)) < 0.3)
         return (true);
-    if (Math.abs(Math.abs(ball.object.position.x) - Math.abs(raqueteX)) - 0.7 < 0.3 && Math.abs(ball.object.position.x)  > Math.abs(raqueteX) && raqueteRotZ != 0)
+    if (Math.abs(Math.abs(ball.object.position.x) - Math.abs(raqueteX)) - 0.6 < 0.3 && Math.abs(ball.object.position.x)  > Math.abs(raqueteX) && raqueteRotZ != 0)
         return(true);
-    if (Math.abs(Math.abs(ball.object.position.x) - Math.abs(raqueteX)) + 0.7 < 0.3 && raqueteRotZ != 0)
+    if (Math.abs(Math.abs(ball.object.position.x) - Math.abs(raqueteX)) + 0.6 < 0.3 && raqueteRotZ != 0)
         return(true);
     return(false);
 }
+
+let middle = 0; // middle = 0.5 - abs(0.5 - ballInitZ) / 2;
 
 
 function animate() {
@@ -266,7 +268,9 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         minX = tableWidth / -2.2;
         if (!flag2 && Math.abs(player2.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player2.raquete.position.x, player2.raquete.rotation.z))
         {
-            factor = 5;
+            // middle = ball.object.position.z - (Math.abs(-0.5 - ball.object.position.z) / 2);
+            middle = ball.object.position.z - 1;
+            console.log("player2 : " ,middle, `ballZ : ${ball.object.position.z}`);
             stepZ = 0.1;
             move = true;
             up = false; 
@@ -277,7 +281,11 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         }
         if (!flag1 && Math.abs(player1.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player1.raquete.position.x, player1.raquete.rotation.z))
         {
-            factor = 5;
+            middle = ball.object.position.z + 1;
+            // middle = ball.object.position.z + (Math.abs(0.5 - ball.object.position.z) / 2);
+            console.log("player1 : " ,middle, `ballZ : ${ball.object.position.z}`);
+
+
             stepZ = -0.1;
             up = false;
             move = true;
@@ -308,21 +316,23 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
 
             if (ball.object.position.y > -0.8 && !up)
             {
-                if(ball.object.position.z < 0 && stepZ > 0)
+                // console.log("middle : " ,middle); 
+                if(ball.object.position.z < middle && stepZ > 0)
                     ball.object.position.y -= calculateStepY();
-                else if (ball.object.position.z  > 0 && stepZ > 0)
-                    ball.object.position.y += calculateStepY() * 3;
-                else if (ball.object.position.z < 0 && stepZ < 0)
-                    ball.object.position.y += calculateStepY() * 3;
-                else if (ball.object.position.z  > 0 && stepZ < 0)
-                ball.object.position.y -= calculateStepY();
+                else if (ball.object.position.z  > middle && stepZ > 0)
+                    ball.object.position.y += calculateStepY();
+                else if (ball.object.position.z < middle && stepZ < 0)
+                    ball.object.position.y += calculateStepY() ;
+                else if (ball.object.position.z  > middle && stepZ < 0)
+                    ball.object.position.y -= calculateStepY();
+
 
             }
             else if (up)
                 ball.object.position.y -= calculateStepY();
             if (ball.object.position.y < -0.8)
             {
-                // ShodowMaterial.color = new THREE.Color(0x000000);
+                ShodowMaterial.color = new THREE.Color(0x000000);
                 up = true;
             }
         }
