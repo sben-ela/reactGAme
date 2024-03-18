@@ -101,4 +101,24 @@ export class EventsGateway {
     this.rooms.get(roomName).client2.emit('start');
   }
 
+  @SubscribeMessage('speed')
+  ballSpeed(@MessageBody() data : [string, number]){
+    if (data[1] < -100){
+      this.rooms.get(data[0])?.client1?.emit('speed', 0.2);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 1.1);
+
+    }
+    else if (data[1] < -50){
+      this.rooms.get(data[0])?.client1?.emit('speed', 0.15);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 1);
+
+    }
+    else{
+      this.rooms.get(data[0])?.client1?.emit('speed', 0.1);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 0.5);
+
+    }
+
+  }
+
 }
