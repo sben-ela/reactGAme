@@ -161,12 +161,10 @@ let initClientY = window.innerHeight / 2;
 let stepX = 0;
 
 function onMouseMove(event : MouseEvent) {
-        if (player1.raquete)// && !controls.enabled
+        if (player1.raquete && !controls.enabled)
         {
             moveZ = (event.clientY - initClientY) / window.innerHeight * 3;
             stepX = (event.clientX - initclientX) / window.innerWidth * (boundingBox.max.x - boundingBox.min.x); 
-            initclientX = event.clientX ;
-            initClientY = event.clientY;
             if (player1.raquete.position.x < -0.1)
                 player1.raquete.rotation.z = Math.PI/5;
             else if (player1.raquete.position.x > 0.1)
@@ -181,8 +179,10 @@ function onMouseMove(event : MouseEvent) {
             {
                 socket.emit('moveX', ['salah' ,stepX]);
                 socket.emit('moveZ', ['salah' ,moveZ]);
-
+                socket.emit('speed', ['salah', event.clientY - initClientY]);
             }
+            initclientX = event.clientX ;
+            initClientY = event.clientY;
         }
 
 }
@@ -190,11 +190,13 @@ function onMouseMove(event : MouseEvent) {
 let stepZ = -0.1;
 
 
+
 function reset(){
     ball.object.position.y = -0.5;
     ball.object.position.z = -2.5;
     ball.object.position.x = 0;
     ball.dirX = 0;
+    falligPoint = 0.5;
     stepZ  = 0;
     up = false;
 
@@ -254,7 +256,7 @@ function touchRaquete(raqueteX : number, raqueteRotZ : number){
 }
 
 let middle = 0; // middle = 0.5 - abs(0.5 - ballInitZ) / 2;
-
+let falligPoint = 0.2;
 
 function animate() {
 if (index ==undefined)
@@ -269,42 +271,45 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         if (!flag2 && Math.abs(player2.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player2.raquete.position.x, player2.raquete.rotation.z))
         {
             // middle = ball.object.position.z - (Math.abs(-0.5 - ball.object.position.z) / 2);
-            middle = ball.object.position.z - 1;
-            console.log("player2 : " ,middle, `ballZ : ${ball.object.position.z}`);
-            stepZ = 0.1;
+            middle = ball.object.position.z - falligPoint;
+            
+            // console.log("p2moveZ : ", p2moveZ);
+            // console.log("player2 : " ,middle, `ballZ : ${ball.object.position.z}`);
+            stepZ = p2Speed;
             move = true;
             up = false; 
             flag2 = true;
             stepZ *= -1;
-            ball.dirX += -moveX;
+            ball.dirX += -moveX / 2;
             moveX = 0;
+            // falligPoint = 1.1;
         }
         if (!flag1 && Math.abs(player1.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player1.raquete.position.x, player1.raquete.rotation.z))
         {
-            middle = ball.object.position.z + 1;
+            middle = ball.object.position.z + falligPoint;
             // middle = ball.object.position.z + (Math.abs(0.5 - ball.object.position.z) / 2);
-            console.log("player1 : " ,middle, `ballZ : ${ball.object.position.z}`);
-
-
+            // console.log("player1 : " ,middle, `ballZ : ${ball.object.position.z}`);
             stepZ = -0.1;
             up = false;
             move = true;
             flag1 = true;
             stepZ *= -1;
-            ball.dirX += -stepX;
+            ball.dirX += -stepX / 2;
+            // falligPoint = 1.1;
         }
         else if(ball.object.position.z > maxZ*1.5)
         {
-            // player1.goals.innerText++;
+            // player1.goals.innerText++;using Node.js, TypeScript, and SQL
             reset();
         }
         else if(ball.object.position.z < minZ*1.5)
+
         {
             // player2.goals.innerText++;
             reset()
         }
         if (ball.object.position.x >= maxX || ball.object.position.x <= minX){
-            // if (ball.object.position.z > 0)
+            // if (ball.object.position.z > 0)using Node.js, TypeScript, and SQL
             //     player1.goals.innerText++;
             // else
             //     player2.goals.innerText++;
@@ -317,6 +322,8 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
             if (ball.object.position.y > -0.8 && !up)
             {
                 // console.log("middle : " ,middle); 
+                console.log("false : ", ball.object.position.y);
+
                 if(ball.object.position.z < middle && stepZ > 0)
                     ball.object.position.y -= calculateStepY();
                 else if (ball.object.position.z  > middle && stepZ > 0)
@@ -325,15 +332,34 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
                     ball.object.position.y += calculateStepY() ;
                 else if (ball.object.position.z  > middle && stepZ < 0)
                     ball.object.position.y -= calculateStepY();
-
-
             }
-            else if (up)
+            // else if (up)
+            // {
+            //     console.log("TRUEEEEE");
+            //     if(ball.object.position.z < middle / 2 && stepZ > 0)
+            //         ball.object.position.y -= calculateStepY();
+            //     else if (ball.object.position.z  > middle / 2 && stepZ > 0)
+            //         ball.object.position.y += calculateStepY();
+            //     else if (ball.object.position.z < middle / 2 && stepZ < 0)
+            //         ball.object.position.y += calculateStepY() ;
+            //     else if (ball.object.position.z  > middle / 2 && stepZ < 0)
+            //         ball.object.position.y -= calculateStepY();
+            // }
+            else{
                 ball.object.position.y -= calculateStepY();
-            if (ball.object.position.y < -0.8)
+                if (ball.object.position.y > -0.5)
+                    up = false;
+            }
+            if (ball.object.position.y <= -0.8)
             {
-                ShodowMaterial.color = new THREE.Color(0x000000);
                 up = true;
+                console.log("middle : ", middle);
+                ShodowMaterial.color = new THREE.Color(0x000000);
+                if (stepZ > 0)
+                    middle = ball.object.position.z + falligPoint / 2;
+                else
+                    middle = ball.object.position.z - falligPoint / 2;
+
             }
         }
         timerCheck();
@@ -356,7 +382,8 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
     }, 1000 / 60); 
     renderer.render( scene, camera );
 }
-
+1
+// let rightClick = false;
 
 document.addEventListener('mousedown', mouseDown);
 document.addEventListener('mouseup', mouseUp);
@@ -366,6 +393,9 @@ function mouseUp(event : MouseEvent){
         controls.enabled = true;
     if (player1.raquete)
         player1.raquete.rotation.x = 0;
+    // if (event.button == 2){
+    //     rightClick = false;
+    // }
 }
 
 function mouseDown(event : MouseEvent) {
@@ -382,6 +412,11 @@ function mouseDown(event : MouseEvent) {
     if (intersects.length > 0) {
         controls.enabled = false;
     }
+    // if (event.button == 2){
+    //     console.log("RIGHT");
+    //     rightClick = true;
+    // }
+
 }
 
 
@@ -409,7 +444,7 @@ socket.on('moveX', (mx : any) => {
 
 let p2moveZ : number;
 socket.on('moveZ', (mz : any) => {
-    console.log("moveZ : ", mz);
+    // console.log("moveZ : ", mz);
 
     p2moveZ = mz;
 })
@@ -427,6 +462,19 @@ socket.on('PlayerMoves', (pos : any, rot : any) => {
 socket.on('index', (i) =>{
     index = i;
     console.log("Game index : ", i);
+})
+
+let p2Speed = 0.1;
+socket.on('speed', (spd) => {
+    p2Speed = spd;
+    console.log("p2Speed : " ,spd);
+})
+
+let changeMove = false;
+
+socket.on('falligPoint', (fp) =>{
+    changeMove = true;
+    falligPoint = fp;
 })
 
 animate();

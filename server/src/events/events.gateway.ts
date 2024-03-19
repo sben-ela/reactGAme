@@ -100,22 +100,30 @@ export class EventsGateway {
     this.rooms.get(roomName).client1.emit('start');
     this.rooms.get(roomName).client2.emit('start');
   }
+// x = data * y;
+// 0.3 = -100 * y
+// y = 0.3 / -100
+// y = -0.003;
 
+      // this.rooms.get(data[0])?.client1?.emit('speed', data[1] * -0.003);
+      // x = -50 * -0.003 
   @SubscribeMessage('speed')
   ballSpeed(@MessageBody() data : [string, number]){
-    if (data[1] < -100){
-      this.rooms.get(data[0])?.client1?.emit('speed', 0.2);
+      
+    if (data[1] < -80){
+      this.rooms.get(data[0])?.client1?.emit('speed', 0.17);
       this.rooms.get(data[0])?.client1?.emit('falligPoint', 1.1);
 
     }
-    else if (data[1] < -50){
-      this.rooms.get(data[0])?.client1?.emit('speed', 0.15);
-      this.rooms.get(data[0])?.client1?.emit('falligPoint', 1);
+    else if (data[1] < -40){
+      this.rooms.get(data[0])?.client1?.emit('speed', 0.13);
+      // this.rooms.get(data[0])?.client1?.emit('falligPoint', 0.1);
 
     }
     else{
       this.rooms.get(data[0])?.client1?.emit('speed', 0.1);
-      this.rooms.get(data[0])?.client1?.emit('falligPoint', 0.5);
+      if (data[1] > -5)
+        this.rooms.get(data[0])?.client1?.emit('falligPoint', 0.2);
 
     }
 
