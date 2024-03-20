@@ -5,7 +5,7 @@ import App from './App.tsx'
 import { Socket, io } from 'socket.io-client';
 
 
-const socket = io("ws://localhost:3000/game");
+const socket = io("ws://10.13.10.6:3000/game");
 
 export const UserContext = createContext(socket);
 

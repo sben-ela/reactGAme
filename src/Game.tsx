@@ -92,7 +92,7 @@ shodow.position.y = -0.9;
 scene.add(shodow);
 
 const sphereGeometry = new THREE.SphereGeometry(0.05, 32, 32);
-const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, transparent : true})
+const sphereMaterial = new THREE.MeshBasicMaterial({color: 0xEAAD0F, transparent : true})
 
 let ball = {
     dirX : 0,
@@ -161,7 +161,7 @@ let initClientY = window.innerHeight / 2;
 let stepX = 0;
 
 function onMouseMove(event : MouseEvent) {
-        if (player1.raquete && !controls.enabled)
+        if (player1.raquete)//&& !controls.enabled
         {
             moveZ = (event.clientY - initClientY) / window.innerHeight * 3;
             stepX = (event.clientX - initclientX) / window.innerWidth * (boundingBox.max.x - boundingBox.min.x); 
@@ -181,6 +181,21 @@ function onMouseMove(event : MouseEvent) {
                 socket.emit('moveZ', ['salah' ,moveZ]);
                 socket.emit('speed', ['salah', event.clientY - initClientY]);
             }
+            else{
+                if (event.clientY - initClientY < -80){
+                    p1Speed =  -0.17;
+                    falligPoint = 1.1;
+
+                }
+                else if (event.clientY - initClientY < -40){
+                    p1Speed =  -0.13;
+                    falligPoint = 1;
+                }
+                else {
+                    p1Speed =  -0.1;
+                    falligPoint = 0.2;
+                }
+            }
             initclientX = event.clientX ;
             initClientY = event.clientY;
         }
@@ -196,7 +211,7 @@ function reset(){
     ball.object.position.z = -2.5;
     ball.object.position.x = 0;
     ball.dirX = 0;
-    falligPoint = 0.5;
+    falligPoint = 0.2;
     stepZ  = 0;
     up = false;
 
@@ -261,6 +276,7 @@ let falligPoint = 0.2;
 function animate() {
 if (index ==undefined)
     socket.emit('index', "salah");
+
 if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
     {
 
@@ -280,7 +296,7 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
             up = false; 
             flag2 = true;
             stepZ *= -1;
-            ball.dirX += -moveX / 2;
+            ball.dirX += -moveX / 5;
             moveX = 0;
             // falligPoint = 1.1;
         }
@@ -289,12 +305,12 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
             middle = ball.object.position.z + falligPoint;
             // middle = ball.object.position.z + (Math.abs(0.5 - ball.object.position.z) / 2);
             // console.log("player1 : " ,middle, `ballZ : ${ball.object.position.z}`);
-            stepZ = -0.1;
+            stepZ = p1Speed;
             up = false;
             move = true;
             flag1 = true;
             stepZ *= -1;
-            ball.dirX += -stepX / 2;
+            ball.dirX += -stepX / 5;
             // falligPoint = 1.1;
         }
         else if(ball.object.position.z > maxZ*1.5)
@@ -375,8 +391,8 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
         shodow.position.z = ball.object.position.z;
         if (shodow.position.z > maxZ || shodow.position.z < minZ || shodow.position.x < minX || shodow.position.x > maxX)
             shodow.material.opacity = 0;
-        // else
-            // shodow.material.opacity = -0.8 - ball.object.position.y;
+        else
+            shodow.material.opacity = -0.8 - ball.object.position.y;
         setTimeout(function() {
             requestAnimationFrame(animate);
     }, 1000 / 60); 
@@ -465,15 +481,14 @@ socket.on('index', (i) =>{
 })
 
 let p2Speed = 0.1;
+let p1Speed = -0.1;
+
 socket.on('speed', (spd) => {
     p2Speed = spd;
-    console.log("p2Speed : " ,spd);
 })
 
-let changeMove = false;
 
 socket.on('falligPoint', (fp) =>{
-    changeMove = true;
     falligPoint = fp;
 })
 
@@ -487,3 +502,4 @@ return (
 }
 
 export default Game
+
