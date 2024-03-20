@@ -17,9 +17,7 @@ export function GamesList({list} : Props){
             {list.map(gameName =>
             <li key={gameName}
             onClick={()=>{socket.emit("JOINROOM", gameName);
-            console.log(`emit To ${gameName}`);
             socket.emit('setstart', gameName);
-            console.log("HNA");
             }}
             >{gameName}</li>)}
         </ul>

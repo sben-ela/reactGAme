@@ -4,9 +4,8 @@ import { useState, createContext, useContext } from "react";
 import io, { Socket } from 'socket.io-client';
 import './index.css'
 import { GamesList } from "./GamesList";
-import useSWR from 'swr';
-
 import { UserContext } from "./main";
+
 
 interface props{
   socket : Socket;
@@ -20,6 +19,8 @@ function App() {
   const socket = useContext(UserContext);
   const [gameslist, setGamesList] = useState<string[]>([]);
   const [start, setStart] = useState(false);
+  const [practice, setPractice] = useState(false);
+
   const [waiting, setWaiting] = useState(false);
 
 
@@ -67,23 +68,28 @@ function App() {
   }
   else if (start){
     return(
-    <Game roomName="salah"/>)
+    <Game roomName="salah" mode="online"/>)
+  }
+  else if (practice){
+    return(
+      <Game roomName="salah" mode="practice"/>)
   }
   else {
-    return(
-    <div>
-    {!start && <button onClick={() => setStart(true)}> Start Game </button>}
-    <button onClick={()=>{socket.emit('CREATEROOM', "salah"); setWaiting(true)}}> CREATEGame </button>
-    {gameslist.length > 0 &&  <GamesList  list={gameslist}/>}
-    </div>
-    )
+    return (
+      <div style={{ position: 'relative' }}>
+        {!start && <button style={{ position: 'absolute', top: '10px', left: '10px' }} onClick={() => setPractice(true)}> Practice Session </button>}
+        <button style={{ position: 'absolute', top: '10px', right: '10px' }} onClick={() => { socket.emit('CREATEROOM', "salah"); setWaiting(true) }}> CREATEGame </button>
+        {gameslist.length > 0 && <GamesList list={gameslist} />}
+      </div>
+    );
+    
   }
-  return (
-    <div className={start ? "game" : ""}>
+  // return (
+  //   <div className={start ? "game" : ""}>
 
 
-    </div>
-  )
+  //   </div>
+  // )
 
 };
 

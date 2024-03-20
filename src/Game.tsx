@@ -2,12 +2,10 @@
 import { AxesHelper } from 'three';
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import io, { Socket } from 'socket.io-client';
-
+import { GLTFLoader , GLTF} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { UserContext } from './main';
 import { useContext } from 'react';
+import './Game.css'
 
 export class Player
 {
@@ -27,9 +25,10 @@ export class Player
 
 interface props{
     roomName : string;
+    mode : string;
 }
   
-function Game({roomName } : props) {
+function Game({roomName , mode} : props) {
 
 const socket = useContext(UserContext);
 
@@ -86,9 +85,9 @@ loader.load( 'table.glb', function ( gltf : GLTF) {
 
 
 const ShodowGeometry = new THREE.SphereGeometry(0.05, 32, 32);
-const ShodowMaterial = new THREE.MeshBasicMaterial({color: 0x000000, transparent : true, opacity : 0})
+const ShodowMaterial = new THREE.MeshBasicMaterial({color: 0x000000, transparent : true, opacity : 0.8})
 const shodow = new THREE.Mesh(ShodowGeometry, ShodowMaterial);
-shodow.position.y = -0.9;
+shodow.position.y = -0.8;
 scene.add(shodow);
 
 const sphereGeometry = new THREE.SphereGeometry(0.05, 32, 32);
@@ -174,7 +173,8 @@ function onMouseMove(event : MouseEvent) {
 
             player1.raquete.position.z -= moveZ;
             player1.raquete.position.x -=  stepX;
-            socket.emit('PlayerMoves', [player1.raquete.position, player1.raquete.rotation, 'salah', index]);
+            if (mode == 'online')
+                socket.emit('PlayerMoves', [player1.raquete.position, player1.raquete.rotation, 'salah', index]);
             if (index == 1)
             {
                 socket.emit('moveX', ['salah' ,stepX]);
@@ -208,12 +208,13 @@ let stepZ = -0.1;
 
 function reset(){
     ball.object.position.y = -0.5;
-    ball.object.position.z = -2.5;
+    ball.object.position.z = 2.5 * (stepZ < 0 ? -1 : 1);
     ball.object.position.x = 0;
     ball.dirX = 0;
     falligPoint = 0.2;
     stepZ  = 0;
     up = false;
+    floorY = -0.8;
 
 }
     
@@ -245,12 +246,10 @@ function timerCheck(){
     }
 }
 
-// let i = 100;
 let gravity = 9.8;
 
 let deltaT = 1/40;        
 let up = false;
-let isIn = false;
 let move = false;
 let rot = 0;
 let index : number;
@@ -270,74 +269,66 @@ function touchRaquete(raqueteX : number, raqueteRotZ : number){
     return(false);
 }
 
-let middle = 0; // middle = 0.5 - abs(0.5 - ballInitZ) / 2;
+let middle = 0;
 let falligPoint = 0.2;
+let floorY = -0.8;
 
 function animate() {
-if (index ==undefined)
+if (index == undefined && mode == 'online')
     socket.emit('index', "salah");
-
-if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
-    {
-
+if (ball.object && object1 && player1.raquete && player2.raquete && (index == 0 || mode == "practice"))
+{
+    
         maxZ = tableHeight / 2;
         minZ = tableHeight / -2;
         maxX = tableWidth / 2.2;
         minX = tableWidth / -2.2;
         if (!flag2 && Math.abs(player2.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player2.raquete.position.x, player2.raquete.rotation.z))
         {
-            // middle = ball.object.position.z - (Math.abs(-0.5 - ball.object.position.z) / 2);
-            middle = ball.object.position.z - falligPoint;
-            
-            // console.log("p2moveZ : ", p2moveZ);
-            // console.log("player2 : " ,middle, `ballZ : ${ball.object.position.z}`);
+            middle = ball.object.position.z - falligPoint;   
             stepZ = p2Speed;
             move = true;
             up = false; 
             flag2 = true;
             stepZ *= -1;
-            ball.dirX += -moveX / 5;
+            ball.dirX += -moveX / 4;
             moveX = 0;
-            // falligPoint = 1.1;
+            if (mode == "practice"){
+                ball.dirX *= -1;
+                player2.raquete.position.z -= 0.8;
+                stepZ = -0.15;
+            }
         }
         if (!flag1 && Math.abs(player1.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player1.raquete.position.x, player1.raquete.rotation.z))
         {
-            middle = ball.object.position.z + falligPoint;
-            // middle = ball.object.position.z + (Math.abs(0.5 - ball.object.position.z) / 2);
-            // console.log("player1 : " ,middle, `ballZ : ${ball.object.position.z}`);
+            middle = ball.object.position.z + falligPoint;;
             stepZ = p1Speed;
             up = false;
             move = true;
             flag1 = true;
             stepZ *= -1;
-            ball.dirX += -stepX / 5;
-            // falligPoint = 1.1;
+            ball.dirX += -stepX / 4;
+            if (mode == "practice")
+                player2.raquete.position.z = (boundingBox.max.z - boundingBox.min.z) * 0.5
         }
         else if(ball.object.position.z > maxZ*1.5)
         {
-            // player1.goals.innerText++;using Node.js, TypeScript, and SQL
             reset();
         }
         else if(ball.object.position.z < minZ*1.5)
-
         {
-            // player2.goals.innerText++;
             reset()
         }
         if (ball.object.position.x >= maxX || ball.object.position.x <= minX){
-            // if (ball.object.position.z > 0)using Node.js, TypeScript, and SQL
-            //     player1.goals.innerText++;
-            // else
-            //     player2.goals.innerText++;
-            reset();
+            // reset();
+            floorY = -1;
         }
         if (move){
             ball.object.position.x += ball.dirX;
             ball.object.position.z += stepZ;
 
-            if (ball.object.position.y > -0.8 && !up)
+            if (ball.object.position.y > floorY && !up)
             {
-                // console.log("middle : " ,middle); 
                 console.log("false : ", ball.object.position.y);
 
                 if(ball.object.position.z < middle && stepZ > 0)
@@ -349,57 +340,43 @@ if (ball.object && object1 && player1.raquete && player2.raquete && index == 0)
                 else if (ball.object.position.z  > middle && stepZ < 0)
                     ball.object.position.y -= calculateStepY();
             }
-            // else if (up)
-            // {
-            //     console.log("TRUEEEEE");
-            //     if(ball.object.position.z < middle / 2 && stepZ > 0)
-            //         ball.object.position.y -= calculateStepY();
-            //     else if (ball.object.position.z  > middle / 2 && stepZ > 0)
-            //         ball.object.position.y += calculateStepY();
-            //     else if (ball.object.position.z < middle / 2 && stepZ < 0)
-            //         ball.object.position.y += calculateStepY() ;
-            //     else if (ball.object.position.z  > middle / 2 && stepZ < 0)
-            //         ball.object.position.y -= calculateStepY();
-            // }
             else{
                 ball.object.position.y -= calculateStepY();
                 if (ball.object.position.y > -0.5)
                     up = false;
             }
-            if (ball.object.position.y <= -0.8)
+            if (ball.object.position.y <= floorY)
             {
                 up = true;
-                console.log("middle : ", middle);
-                ShodowMaterial.color = new THREE.Color(0x000000);
                 if (stepZ > 0)
                     middle = ball.object.position.z + falligPoint / 2;
                 else
                     middle = ball.object.position.z - falligPoint / 2;
-
             }
+        }
+        if (mode == "practice"){
+           player2.raquete.position.x =  ball.object.position.x ;
+
         }
         timerCheck();
         }
-        if (!isIn){
-            socket.emit("JoinRoom", 'salah');
-            isIn = true;
-        }
-        else if (ball.object && index == 0)
+        if (ball.object && mode == "online" && index == 0)
             socket.emit('data', [{x : ball.object.position.x, y : ball.object.position.y, z : ball.object.position.z}, "salah"]);
-    
+
         shodow.position.x = ball.object.position.x;
         shodow.position.z = ball.object.position.z;
         if (shodow.position.z > maxZ || shodow.position.z < minZ || shodow.position.x < minX || shodow.position.x > maxX)
             shodow.material.opacity = 0;
-        else
-            shodow.material.opacity = -0.8 - ball.object.position.y;
+        else{
+            ShodowMaterial.color = new THREE.Color(0x0000000);
+            shodow.material.opacity = 0.5;
+        }
         setTimeout(function() {
             requestAnimationFrame(animate);
     }, 1000 / 60); 
     renderer.render( scene, camera );
 }
 1
-// let rightClick = false;
 
 document.addEventListener('mousedown', mouseDown);
 document.addEventListener('mouseup', mouseUp);
@@ -409,9 +386,6 @@ function mouseUp(event : MouseEvent){
         controls.enabled = true;
     if (player1.raquete)
         player1.raquete.rotation.x = 0;
-    // if (event.button == 2){
-    //     rightClick = false;
-    // }
 }
 
 function mouseDown(event : MouseEvent) {
@@ -428,20 +402,7 @@ function mouseDown(event : MouseEvent) {
     if (intersects.length > 0) {
         controls.enabled = false;
     }
-    // if (event.button == 2){
-    //     console.log("RIGHT");
-    //     rightClick = true;
-    // }
-
 }
-
-
-//   const socket = io("localhost:3000");
-
-
-//   socket.on('connection', () => {
-//       console.log("connect To server !");
-//   })
 
 socket.on('data', (message : any)=> {
     if (index == 1 && ball.object){
@@ -450,8 +411,6 @@ socket.on('data', (message : any)=> {
         ball.object.position.z = -message[0].z;
     }
 })
-
-
 
 socket.on('moveX', (mx : any) => {
     moveX = mx;
@@ -496,8 +455,10 @@ animate();
 
 
 return (
-<>
-</>
+<div>
+{/* <h1 style={}> TEST </h1> */}
+
+</div>
 )
 }
 
