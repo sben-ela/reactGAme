@@ -111,18 +111,18 @@ export class EventsGateway {
   ballSpeed(@MessageBody() data : [string, number]){
       
     if (data[1] < -80){
-      this.rooms.get(data[0])?.client1?.emit('speed', 0.17);
-      this.rooms.get(data[0])?.client1?.emit('falligPoint', 1.1);
+      this.rooms.get(data[0])?.client1?.emit('speed', 4);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 2.5);
 
     }
     else if (data[1] < -40){
-      this.rooms.get(data[0])?.client1?.emit('speed', 0.13);
-      this.rooms.get(data[0])?.client1?.emit('falligPoint', 1);
+      this.rooms.get(data[0])?.client1?.emit('speed', 3.5);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 3);
 
     }
     else{
-      this.rooms.get(data[0])?.client1?.emit('speed', 0.1);
-      this.rooms.get(data[0])?.client1?.emit('falligPoint', 0.2);
+      this.rooms.get(data[0])?.client1?.emit('speed', 3);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 4);
     }
 
   }

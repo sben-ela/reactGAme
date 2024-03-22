@@ -35,7 +35,7 @@ const socket = useContext(UserContext);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-const renderer = new THREE.WebGLRenderer({ alpha: true });
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 renderer.setClearColor(0x000000, 0); 
 renderer.setSize( window.innerWidth, window.innerHeight );
 const controls = new OrbitControls( camera, renderer.domElement );
@@ -160,7 +160,7 @@ let initClientY = window.innerHeight / 2;
 let stepX = 0;
 
 function onMouseMove(event : MouseEvent) {
-        if (player1.raquete)//&& !controls.enabled
+        if (player1.raquete && !controls.enabled)//
         {
             moveZ = (event.clientY - initClientY) / window.innerHeight * 3;
             stepX = (event.clientX - initclientX) / window.innerWidth * (boundingBox.max.x - boundingBox.min.x); 
@@ -285,6 +285,9 @@ if (ball.object && object1 && player1.raquete && player2.raquete && (index == 0 
         minX = tableWidth / -2.2;
         if (!flag2 && Math.abs(player2.raquete.position.z - ball.object.position.z) < 0.3 && touchRaquete(player2.raquete.position.x, player2.raquete.rotation.z))
         {
+            if (mode == "practice")
+                falligPoint = 1.5;
+
             middle = ball.object.position.z - falligPoint;   
             stepZ = p2Speed;
             move = true;

@@ -6,7 +6,7 @@ import './index.css'
 import { GamesList } from "./GamesList";
 import { UserContext } from "./main";
 
-
+import FirstPage from "./FirstPage";
 interface props{
   socket : Socket;
 }
@@ -68,11 +68,11 @@ function App() {
   }
   else if (start){
     return(
-    <Game roomName="salah" mode="online"/>)
+    <FirstPage roomName="salah" mode="online"/>)
   }
   else if (practice){
     return(
-      <Game roomName="salah" mode="practice"/>)
+      <FirstPage roomName="salah" mode="practice"/>)
   }
   else {
     return (
@@ -81,6 +81,7 @@ function App() {
         <button style={{ position: 'absolute', top: '10px', right: '10px' }} onClick={() => { socket.emit('CREATEROOM', "salah"); setWaiting(true) }}> CREATEGame </button>
         {gameslist.length > 0 && <GamesList list={gameslist} />}
       </div>
+      // <FirstPage roomName="salah" mode="practice"/>
     );
     
   }
