@@ -1,13 +1,7 @@
 import { SubscribeMessage, WebSocketGateway, MessageBody,WebSocketServer } from '@nestjs/websockets';
 import { Server , Socket} from 'socket.io';
-import { SocketReadyState } from 'net';
 import { Room } from './Room';
-import { RouterModule } from '@nestjs/core';
-import { Settings } from 'http2';
-import { subscribe } from 'diagnostics_channel';
-import { copyFileSync } from 'fs';
 import { Ball } from 'src/ball/ball';
-import { RouteInfoPathExtractor } from '@nestjs/core/middleware/route-info-path-extractor';
 
 const gamesList= [];
 
@@ -100,13 +94,7 @@ export class EventsGateway {
     this.rooms.get(roomName).client1.emit('start');
     this.rooms.get(roomName).client2.emit('start');
   }
-// x = data * y;
-// 0.3 = -100 * y
-// y = 0.3 / -100
-// y = -0.003;
 
-      // this.rooms.get(data[0])?.client1?.emit('speed', data[1] * -0.003);
-      // x = -50 * -0.003 
   @SubscribeMessage('speed')
   ballSpeed(@MessageBody() data : [string, number]){
       

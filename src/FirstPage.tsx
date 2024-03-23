@@ -280,7 +280,7 @@ export default function FirstPage({roomName , mode} : props){
 					ball.object.position.z = -(boundingBox.max.z - boundingBox.min.z) * 0.4 * (stepZ < 0 ? 1 : -1);
 					ball.object.position.x = 35;
 					ball.dirX = 0;
-					falligPoint = (boundingBox.max.z - boundingBox.min.z) / 4;
+					// falligPoint = (boundingBox.max.z - boundingBox.min.z) / 4;
 					stepZ  = 0;
 					up = false;
 					floorY = 45;
@@ -335,7 +335,6 @@ export default function FirstPage({roomName , mode} : props){
 				}
 
 				function touchRaquete(raqueteX : number, raqueteRotZ : number){
-					console.log("bx : ", ball.object.position.x, " rx : ", raqueteX);
 					// if (Math.abs(ball.object.position.x - raqueteX) < 6)
 					// 	return (true);
 					// if (Math.abs(ball.object.position.x - raqueteX) - 12 < 6 && Math.abs(ball.object.position.x)  > Math.abs(raqueteX) && raqueteRotZ != 0)
@@ -370,6 +369,7 @@ export default function FirstPage({roomName , mode} : props){
 					socket.emit('index', "salah");
 				if (ball.object && table && player1.raquete && player2.raquete && (index == 0 || mode == "practice"))
 				{
+						console.log("falligPoint : " ,falligPoint)
 						maxZ = tableHeight / 2;
 						minZ = tableHeight / -2;
 						maxX = tableWidth / 2.2;
@@ -428,11 +428,17 @@ export default function FirstPage({roomName , mode} : props){
 							ball.object.position.z += stepZ;
 							if (Math.abs(ball.object.position.z) < 10 && ball.object.position.y < 50 && (mode == "online" || stepZ > 0)){
 								falligPoint = 0.1;
+								middle = ball.object.position.z - falligPoint;;
+								up = false;
 								stepZ *= -1;
+								// stepZ = stepZ / 3;
 								touchNet = true;
+								console.log("falligPointCHange : " ,falligPoint)
+
 							}
 							if (ball.object.position.y > floorY && !up)
 							{
+								console.log("TRUE")
 								if(ball.object.position.z < middle && stepZ > 0)
 									ball.object.position.y -= calculateStepY();
 								else if (ball.object.position.z  > middle && stepZ > 0)
