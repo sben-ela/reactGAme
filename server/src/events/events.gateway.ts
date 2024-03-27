@@ -114,5 +114,15 @@ export class EventsGateway {
     }
 
   }
+  @SubscribeMessage('score')
+  scoreEvent(@MessageBody() score : any[]){
+    this.server.to(score[2]).emit('score', score);
+  }
+  @SubscribeMessage('endGame')
+  endGame(@MessageBody() playerScore : any[]){
+    console.log(playerScore);
+    // this.server.emit('endGame', playerScore);
 
+    this.server.to(playerScore[2]).emit('endGame', playerScore);
+  }
 }
