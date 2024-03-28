@@ -3,22 +3,27 @@ import { Server , Socket} from 'socket.io';
 import { Room } from './Room';
 import { Ball } from 'src/ball/ball';
 
-const gamesList= [];
 
-function removeGameList(value  : string)  {
-  const index = gamesList.indexOf(value);
-  if (index !== -1) {
-      gamesList.splice(index, 1);
-  }
-};
+// function removeGameList(value  : string)  {
+//   const index = gamesList.indexOf(value);
+//   if (index !== -1) {
+//       gamesList.splice(index, 1);
+//   }
+// };
 
 
 @WebSocketGateway({ cors: true  , namespace: 'game' })
 export class EventsGateway {
   @WebSocketServer() server: Server;
   rooms = new Map();
+  gamesList = new Map<string, string>();
 
-
+  getClientRoomName(clientId : string){
+      for(let [roomName, room] of this.rooms){
+          if (room.client1.id == clientId || room.client2.id == clientId)
+            return (roomName);
+      }
+    }
   @SubscribeMessage('CREATEROOM')
     createRoom(client: Socket, roomName : string) {
 
@@ -27,9 +32,10 @@ export class EventsGateway {
         const newRoom = new Room(roomName);
         newRoom.client1 = client;
         this.rooms.set(roomName, newRoom);
-        gamesList.push(roomName);
-        console.log(gamesList);
-        this.server.emit('GamesList', gamesList);
+        this.gamesList.set(client.id, roomName);
+        console.log(this.gamesList);
+        const valuesArray = Array.from(this.gamesList.values());
+        this.server.emit('GamesList', valuesArray);
         client.join(roomName);
       }
       else
@@ -47,7 +53,7 @@ export class EventsGateway {
         }
         this.rooms.get(roomName).client2 = client;
         client.join(roomName);
-        removeGameList(roomName);
+        // removeGameList(roomName);
         console.log(" Joined room : ", roomName);
       }
       else 
@@ -98,15 +104,19 @@ export class EventsGateway {
   @SubscribeMessage('speed')
   ballSpeed(@MessageBody() data : [string, number]){
       
-    if (data[1] < -80){
-      this.rooms.get(data[0])?.client1?.emit('speed', 4);
-      this.rooms.get(data[0])?.client1?.emit('falligPoint', 2.5);
-
-    }
-    else if (data[1] < -40){
-      this.rooms.get(data[0])?.client1?.emit('speed', 3.5);
+    if (data[1] < -200){
+      this.rooms.get(data[0])?.client1?.emit('speed', 10);
       this.rooms.get(data[0])?.client1?.emit('falligPoint', 3);
 
+    }
+    else if (data[1] < -150){
+      this.rooms.get(data[0])?.client1?.emit('speed', 7);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 3);
+
+    }
+    else if (data[1] < -100){
+      this.rooms.get(data[0])?.client1?.emit('speed', 6);
+      this.rooms.get(data[0])?.client1?.emit('falligPoint', 3);
     }
     else{
       this.rooms.get(data[0])?.client1?.emit('speed', 3);
@@ -123,6 +133,24 @@ export class EventsGateway {
     console.log(playerScore);
     // this.server.emit('endGame', playerScore);
 
-    this.server.to(playerScore[2]).emit('endGame', playerScore);
+    this.server.to(playerScore[2]).emit('endGame', playerScore); 
   }
+
+  handleConnection(client : Socket){
+    console.log("Connect");
+    const valuesArray = Array.from(this.gamesList.values());
+
+    client.emit('GamesList', valuesArray);
+    console.log("GAMELIST : ", valuesArray);
+  }
+
+  handleDisconnect(client : Socket) {
+    this.gamesList.delete(client.id);
+    const valuesArray = Array.from(this.gamesList.values());
+    this.server.emit('GamesList', valuesArray);
+    const clientRoom = this.getClientRoomName(client.id);
+    console.log("ClientRoom : ", clientRoom);
+    this.server.to(clientRoom)?.emit('endGame', [5, 4]);
+    console.log("Disconnect");
+  }  
 }
